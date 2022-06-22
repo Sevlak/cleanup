@@ -12,10 +12,11 @@ var mostVisited []string
 var allTabs []string
 
 func init() {
-
 	allTabs = getAllTabs("tab_list.txt")
+	mostVisited = getAnalyticsTabs("analytics.xlsx")
 }
 
+//TODO: Check if a tab on allTabs exists into mostVisited. If not, mark it to remove later.
 func main() {
 
 }
@@ -29,7 +30,7 @@ func checkWWW(link string) string {
 }
 
 func getAnalyticsTabs(spreadsheetName string) (tabs []string) {
-	f, err := excelize.OpenFile("analytics.xlsx")
+	f, err := excelize.OpenFile(spreadsheetName)
 	if err != nil {
 		log.Fatalf("error opening spreadsheet file: %s\n", err)
 	}
@@ -53,7 +54,7 @@ func getAnalyticsTabs(spreadsheetName string) (tabs []string) {
 }
 
 func getAllTabs(filename string) (lines []string) {
-	f, err := os.Open("tab_list.txt")
+	f, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
