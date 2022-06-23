@@ -8,15 +8,16 @@ import (
 	"strings"
 )
 
-var mostVisited []string
+var mostVisited map[string]struct{}
 var allTabs []string
 
 func init() {
 	allTabs = getAllTabs("tab_list.txt")
-	mostVisited = getAnalyticsTabs("analytics.xlsx")
+	mostVisited = make(map[string]struct{})
+	setAnalyticsTabs("analytics.xlsx", mostVisited)
 }
 
-//TODO: Check if a tab on allTabs exists into mostVisited. If not, mark it to remove later.
+//TODO: Check if a tab from allTabs exists into mostVisited. If not, mark it to remove later.
 func main() {
 
 }
@@ -29,7 +30,7 @@ func checkWWW(link string) string {
 	return "www." + link
 }
 
-func getAnalyticsTabs(spreadsheetName string) (tabs []string) {
+func setAnalyticsTabs(spreadsheetName string, table map[string]struct{}) {
 	f, err := excelize.OpenFile(spreadsheetName)
 	if err != nil {
 		log.Fatalf("error opening spreadsheet file: %s\n", err)
@@ -47,10 +48,8 @@ func getAnalyticsTabs(spreadsheetName string) (tabs []string) {
 	}
 
 	for _, row := range rows[1:] { //we skip the spreadsheet header
-		tabs = append(tabs, checkWWW(row[0]))
+		table[checkWWW(row[0])] = struct{}{}
 	}
-
-	return tabs
 }
 
 func getAllTabs(filename string) (lines []string) {
