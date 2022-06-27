@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"github.com/xuri/excelize/v2"
 	"log"
 	"os"
@@ -17,11 +18,33 @@ func init() {
 	setAnalyticsTabs("analytics.xlsx", mostVisited)
 }
 
-//TODO: Check if a tab from allTabs exists into mostVisited. If not, mark it to remove later.
 func main() {
+	var result []string
+	for _, tab := range allTabs {
+		if _, ok := mostVisited[tab]; ok {
+			result = append(result, tab)
+		}
+	}
 
+	f, err := os.Create("least_accessed.txt")
+	if err != nil {
+		panic(err) //if we can't create the file, something is wrong
+	}
+	defer func() {
+		if err := f.Close(); errors.Is(err, os.ErrClosed) {
+			log.Fatalf("error closing file: %s\n", err)
+		}
+	}()
+
+	w := bufio.NewWriter(f)
+	for _, data := range result {
+		w.WriteString(data + "\n")
+	}
+
+	w.Flush()
 }
 
+///Treats and checks if link has
 func checkWWW(link string) string {
 	link = strings.Replace(link, "/", "", 1) //remove '/' rune on the start of every cell, dunno why that happens
 	if strings.HasPrefix(link, "www.") {
@@ -36,7 +59,6 @@ func setAnalyticsTabs(spreadsheetName string, table map[string]struct{}) {
 		log.Fatalf("error opening spreadsheet file: %s\n", err)
 	}
 	defer func() {
-		// Close the spreadsheet.
 		if err := f.Close(); err != nil {
 			log.Fatalf("error closing file: %s\n", err)
 		}
@@ -48,7 +70,7 @@ func setAnalyticsTabs(spreadsheetName string, table map[string]struct{}) {
 	}
 
 	for _, row := range rows[1:] { //we skip the spreadsheet header
-		table[checkWWW(row[0])] = struct{}{}
+		table["https://"+checkWWW(row[0])] = struct{}{}
 	}
 }
 
@@ -58,7 +80,6 @@ func getAllTabs(filename string) (lines []string) {
 		log.Fatal(err)
 	}
 	defer func() {
-		// Close the spreadsheet.
 		if err := f.Close(); err != nil {
 			log.Fatalf("error closing file: %s\n", err)
 		}
