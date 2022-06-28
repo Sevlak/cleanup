@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"flag"
 	"github.com/xuri/excelize/v2"
 	"log"
 	"os"
@@ -11,11 +12,17 @@ import (
 
 var mostVisited map[string]struct{}
 var allTabs []string
+var filename, spreadsheet string
 
 func init() {
-	allTabs = getAllTabs("tab_list.txt")
+	flag.StringVar(&filename, "filename", "tab_list.txt", "file name that contains all urls, one per line")
+	flag.StringVar(&spreadsheet, "spreadsheet", "analytics.xlsx", "spreadsheet name (.xlsx)")
+	flag.Parse()
+
+	allTabs = getAllTabs(filename)
 	mostVisited = make(map[string]struct{})
-	setAnalyticsTabs("analytics.xlsx", mostVisited)
+	setAnalyticsTabs(spreadsheet, mostVisited)
+
 }
 
 func main() {
@@ -44,7 +51,6 @@ func main() {
 	w.Flush()
 }
 
-///Treats and checks if link has
 func checkWWW(link string) string {
 	link = strings.Replace(link, "/", "", 1) //remove '/' rune on the start of every cell, dunno why that happens
 	if strings.HasPrefix(link, "www.") {
